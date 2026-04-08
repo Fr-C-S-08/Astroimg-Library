@@ -1,6 +1,11 @@
-/.DS_Store
-/astroimg.egg-info__pycache__/
+__pycache__/
 *.pyc
 astroimg.egg-info/
 .DS_Store
+.vscode/
+.venv/
+venv/
+env/
+.env/
+
 
