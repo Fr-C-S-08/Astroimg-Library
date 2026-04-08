@@ -221,6 +221,46 @@ def list_surveys() -> list[str]:
     """Return the list of candidate survey names."""
     return list(CANDIDATE_SURVEYS)
 
+def download_best(ra, dec, radius=0.5):
+    """
+    Download the best available FITS image for the given coordinates.
+
+    Automatically tries all surveys and pixel sizes from highest
+    to lowest, returning the best combination.
+
+    Parameters
+    ----------
+    ra : float
+        Right ascension in degrees (J2000).
+    dec : float
+        Declination in degrees (J2000).
+    radius : float
+        Half-width of the image in degrees. Default: 0.5.
+
+    Returns
+    -------
+    data : np.ndarray
+        2D float array of pixel intensities.
+    header : fits.Header
+        FITS header with metadata.
+    wcs : WCS
+        World Coordinate System for pixel <-> sky conversion.
+    """
+    surveys = ["DSS", "DSS2 Red", "DSS2 Blue"]
+    pixels_to_try = [2000, 1500, 1000, 900, 700, 500, 300]
+    position = f"{ra} {dec}"
+
+    for survey in surveys:
+        for px in pixels_to_try:
+            result = _try_download(position, survey, px)
+            if result is None:
+                continue
+
+            data, header, wcs = _extract_data(result, survey, px)
+            print(f"  => {survey} {px}px")
+            return data, header, wcs
+
+    raise ValueError(f"No images found at ra={ra}, dec={dec}")
 
 def radec_to_pixel(ra: float, dec: float, wcs: WCS) -> tuple[float, float]:
     """Convert sky coordinates to pixel coordinates."""
