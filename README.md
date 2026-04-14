@@ -75,6 +75,20 @@ Or install from source:
     from astroimg import highlight_star
     highlight_star(data, wcs, name="HD 196885", sources=sources)
 
+## Tutorial
+
+A complete end-to-end tutorial is available as a Google Colab notebook, using the Pleiades cluster (M45) as the target:
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ln6vDxoyhJ3HhTe48qyPyTvRKi7dxNLy?usp=sharing)
+
+The notebook covers:
+
+1. Downloading a FITS image from SkyView
+2. Applying Gaussian, LoG, and Matched filter kernels
+3. Source detection (individual and consensus)
+4. Aperture photometry with sky subtraction
+5. Highlighting specific stars by name using Simbad + Gaia DR3
+
 ## Docker
 
     docker compose up
