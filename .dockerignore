@@ -1,0 +1,11 @@
+__pycache__
+*.pyc
+.git
+.github
+.vscode
+.pytest_cache
+astroimg.egg-info
+tests
+notebooks
+*.md
+LICENSE

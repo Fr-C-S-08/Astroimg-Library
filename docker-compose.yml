@@ -1,0 +1,4 @@
+services:
+  astroimg:
+    build: .
+    container_name: astroimg-demo
