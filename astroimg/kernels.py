@@ -5,17 +5,16 @@ Implements three convolution kernels from mathematical fundamentals
 using numpy and scipy.ndimage:
 
 - gaussian_kernel  : Smooths noise, preserves structure.
-- log_kernel       : Laplacian of Gaussian — detects point sources.
-- matched_filter   : Maximises SNR for point-like sources.
+- log_kernel       : Laplacian of Gaussian, detects point sources.
+- matched_filter   : Maximises Signal to Noise Ratio for point like sources.
 - estimate_background : Estimates sky background level and noise.
 """
 
 import numpy as np
 from scipy.ndimage import convolve
 
-
 # ──────────────────────────────────────────────
-# Kernel builders (internal)
+# Kernel builders
 # ──────────────────────────────────────────────
 
 def _gaussian_2d(size, sigma):
@@ -29,7 +28,7 @@ def _gaussian_2d(size, sigma):
 
 
 def _log_2d(size, sigma):
-    """Build a Laplacian-of-Gaussian (LoG) kernel."""
+    """Build a Laplacian of Gaussian (LoG) kernel."""
     if size % 2 == 0:
         size += 1
     center = size // 2
@@ -42,31 +41,32 @@ def _log_2d(size, sigma):
 
 
 def _matched_filter_2d(size, sigma):
-    """Build a matched filter kernel for point-source detection."""
+    """Build a matched filter kernel for point source detection."""
     kernel = _gaussian_2d(size, sigma)
     kernel -= kernel.mean()
     return kernel
 
 
 # ──────────────────────────────────────────────
-# Public API
+# Public methodss
 # ──────────────────────────────────────────────
 
 def gaussian_kernel(data, sigma=2.0, size=None):
     """
-    Convolve an image with a 2D Gaussian kernel (smoothing).
+    Convolve an image with a 2D Gaussian kernel.
 
-    Suppresses high-frequency detector noise while preserving
+    Suppresses high frequency noise while preserving
     extended structures like nebulae and galaxy arms.
+    Smooths noise, preserves structure.
 
     Parameters
     ----------
     data : np.ndarray
         2D input image.
     sigma : float
-        Gaussian standard deviation in pixels. Default: 2.0.
+        Gaussian standard deviation in pixels.
     size : int or None
-        Kernel side length. If None, defaults to 6*sigma + 1.
+        Kernel side length.
 
     Returns
     -------
@@ -82,19 +82,19 @@ def gaussian_kernel(data, sigma=2.0, size=None):
 
 def log_kernel(data, sigma=2.0, size=None):
     """
-    Apply a Laplacian-of-Gaussian (LoG) filter for source detection.
+    Apply a Laplacian of Gaussian (LoG) filter for source detection.
 
     Highlights regions of rapid intensity change. Point sources
-    (stars) produce strong peaks in the output.
+    produce strong peaks in the output. Detects point sources.
 
     Parameters
     ----------
     data : np.ndarray
         2D input image.
     sigma : float
-        Gaussian scale in pixels. Default: 2.0.
+        Gaussian scale in pixels.
     size : int or None
-        Kernel side length. Defaults to 6*sigma + 1.
+        Kernel side length.
 
     Returns
     -------
@@ -121,9 +121,9 @@ def matched_filter(data, sigma=2.0, size=None):
     data : np.ndarray
         2D input image.
     sigma : float
-        Expected PSF sigma in pixels. Default: 2.0.
+        Expected PSF sigma in pixels.
     size : int or None
-        Kernel side length. Defaults to 6*sigma + 1.
+        Kernel side length.
 
     Returns
     -------
