@@ -13,26 +13,18 @@ from astropy.wcs import WCS
 from astroimg.kernels import estimate_background
 
 
-def detect_sources(
-    data,
-    wcs,
-    kernel="log",
-    sigma=2.0,
-    threshold=5.0,
-    min_separation=5,
-    border=20,
-):
+def detect_sources(data, wcs, kernel="log", sigma=2.0, threshold=5.0, min_separation=5, border=20, ):
     """
     Detect point sources in a FITS image.
 
     Parameters
     ----------
     data : np.ndarray
-        2D image array (raw, from download_fits or download_best).
+        2D image array.
     wcs : astropy.wcs.WCS
         WCS object for pixel-to-sky coordinate conversion.
     kernel : str
-        Kernel to use: 'log', 'matched', 'gaussian'. Default: 'log'.
+        Kernel to use: 'log', 'matched', 'gaussian'.
     sigma : float
         Gaussian sigma for the kernel in pixels. Default: 2.0.
     threshold : float
@@ -45,13 +37,12 @@ def detect_sources(
     Returns
     -------
     pd.DataFrame
-        Table with columns: x_pixel, y_pixel, ra, dec, peak_value, snr.
+        Table with columns: x_pixel, y_pixel, ra, dec, peak_value, signal to noise ratio.
         Sorted by peak_value descending.
     """
     from astroimg.kernels import gaussian_kernel, log_kernel, matched_filter
 
-    # Step 1 — Apply kernel directly (LoG and matched are zero-sum,
-    # they already ignore constant backgrounds)
+    # Apply kernel directly to de raw data
     if kernel == "log":
         convolved = -log_kernel(data, sigma=sigma)
     elif kernel == "matched":
@@ -61,18 +52,18 @@ def detect_sources(
     else:
         raise ValueError(f"Unknown kernel '{kernel}'. Use 'log', 'matched' or 'gaussian'.")
 
-    # Step 2 — Estimate noise of the convolved image
+    #Estimate noise of the convolved image
     bg_conv, noise_conv = estimate_background(convolved)
     detection_threshold = bg_conv + threshold * noise_conv
 
-    # Step 3 — Binary mask of pixels above threshold
+    # Binary mask of pixels above threshold
     above_threshold = convolved > detection_threshold
 
-    # Step 4 — Find local maxima
+    # Find local maximum
     size = min_separation * 2 + 1
     local_max = maximum_filter(convolved, size=size) == convolved
 
-    # Step 5 — Combine
+    # Combine both results
     peaks = above_threshold & local_max
 
     # Exclude border pixels
@@ -81,22 +72,22 @@ def detect_sources(
     peaks[:, :border] = False
     peaks[:, -border:] = False
 
-    # Step 6 — Get coordinates
+    # Get coordinates for the results 
     y_coords, x_coords = np.where(peaks)
 
     if len(x_coords) == 0:
         return pd.DataFrame(columns=["x_pixel", "y_pixel", "ra", "dec", "peak_value", "snr"])
 
-    # Step 7 — Calculate SNR for each source
+    #Calculate Signal to Noise Ratio for each source
     peak_values = convolved[y_coords, x_coords]
     snr_values = (peak_values - bg_conv) / noise_conv
 
-    # Step 8 — Convert pixel to sky coordinates
+    #Convert pixel to sky coordinates
     sky_coords = wcs.pixel_to_world(x_coords, y_coords)
     ra_values = sky_coords.ra.deg
     dec_values = sky_coords.dec.deg
 
-    # Step 9 — Build DataFrame
+    # Build DataFrame with combined results 
     sources = pd.DataFrame({
         "x_pixel": x_coords.astype(int),
         "y_pixel": y_coords.astype(int),
@@ -105,10 +96,10 @@ def detect_sources(
         "peak_value": peak_values,
         "snr": snr_values,
     })
-
+    # Sort results
     sources = sources.sort_values("peak_value", ascending=False).reset_index(drop=True)
 
-    # Step 10 — Merge nearby detections (bright stars = 1 source, not 3)
+    # Merge nearby detections ( very bright stars = 1 source, not 3 becuase of the flashes of the image)
     sources = _merge_nearby(sources, merge_radius=8)
 
     return sources
@@ -161,7 +152,7 @@ def filter_sources(sources, min_peak=None, max_peak=None, ra_range=None, dec_ran
 
 def _merge_nearby(sources, merge_radius=8):
     """
-    Merge detections that are too close — keep only the brightest.
+    Merge detections that are too close and keep only the brightest.
 
     If multiple sources fall within merge_radius pixels of each other,
     only the one with the highest peak_value survives.
@@ -201,21 +192,13 @@ def _merge_nearby(sources, merge_radius=8):
     return sources[keep].reset_index(drop=True)
 
 
-def detect_sources_consensus(
-    data,
-    wcs,
-    threshold=5.0,
-    min_separation=5,
-    border=20,
-    match_radius=3,
-    min_snr=6.0,
-):
+def detect_sources_consensus(data, wcs, threshold=5.0, min_separation=5, border=20, match_radius=3, min_snr=6.0, ):
     """
     Detect sources using strict consensus between LoG and Matched filter.
 
     A source is reported only if:
       1. BOTH kernels detect it within match_radius pixels
-      2. The SNR from BOTH detectors is above min_snr
+      2. The Signal to Noise Ratio (SNR) from both detectors is above min_snr
 
     Parameters
     ----------
@@ -233,7 +216,7 @@ def detect_sources_consensus(
         Max distance in pixels to consider two detections the same
         source. Tighter = fewer false matches. Default: 3.
     min_snr : float
-        Minimum SNR required from BOTH detectors. Default: 6.0.
+        Minimum SNR required from bothh detectors. Default: 6.0.
 
     Returns
     -------
