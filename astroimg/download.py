@@ -1,7 +1,7 @@
 """
 download.py — Download FITS images from SkyView/DSS via astroquery.
 
-Supports automatic survey selection and pixel size negotiation.
+Supports automatic survey selection and automatic pixel size negotiation.
 """
 
 import numpy as np
@@ -30,7 +30,7 @@ PIXEL_CANDIDATES = [2000, 1500, 1000, 900, 700, 500, 400, 350, 300]
 def _quality_score(data: np.ndarray) -> float:
     """
     Compute a quality score for a FITS image.
-    Higher score = better image quality.
+    Higher score = better image quality, the default quality is 2000px.
     """
     effective_range = np.percentile(data, 99.5) - np.percentile(data, 0.5)
     median = np.median(data)
@@ -52,15 +52,13 @@ def _try_download(position: str, survey: str, pixels: int):
         return None
 
 
-def _extract_data(
-    image_list, survey: str, pixels_used: int
-) -> tuple[np.ndarray, fits.Header, WCS]:
+def _extract_data(image_list, survey: str, pixels_used: int) -> tuple[np.ndarray, fits.Header, WCS]:
     """Extract data, header and WCS from a SkyView result."""
     hdu = image_list[0][0]
     data = hdu.data.astype(np.float64)
     header = hdu.header
-    header["SURVEY_USED"] = survey
-    header["PIXELS_USED"] = pixels_used
+    header["SURVEY USED"] = survey
+    header["PIXELS USED"] = pixels_used
     wcs = WCS(header)
 
     nan_mask = ~np.isfinite(data)
@@ -72,12 +70,12 @@ def _extract_data(
 
 def _find_best_pixels(position: str, survey: str, pixels: int) -> tuple:
     """Try requested pixels first, then fallbacks from high to low."""
-    # Intentar el tamaño pedido primero
+    # Try requested quality
     result = _try_download(position, survey, pixels)
     if result:
         return result, pixels
 
-    # Si falla, probar de mayor a menor
+    # Prove from highest to lowest if fails
     for p in PIXEL_CANDIDATES:
         if p == pixels:
             continue
@@ -88,14 +86,7 @@ def _find_best_pixels(position: str, survey: str, pixels: int) -> tuple:
     return None, 0
 
 
-def download_fits(
-    ra: float,
-    dec: float,
-    radius: float = 0.5,
-    survey: str | None = None,
-    pixels: int = 300,
-    auto_best: bool = True,
-) -> tuple[np.ndarray, fits.Header, WCS]:
+def download_fits(ra: float, dec: float, radius: float = 0.5, survey: str | None = None, pixels: int = 2000, auto_best: bool = True,) -> tuple[np.ndarray, fits.Header, WCS]:
     """
     Download a FITS image centered on the given sky coordinates.
 
@@ -111,7 +102,7 @@ def download_fits(
         Survey name. If None, tries all surveys and returns the
         best quality image automatically.
     pixels : int
-        Requested image size in pixels. Default: 300.
+        Requested image size in pixels.
         If not available, tries other sizes automatically.
     auto_best : bool
         If True and survey is None, compare all available surveys
@@ -145,9 +136,7 @@ def download_fits(
         return _download_first(position_str, pixels)
 
 
-def _download_single(
-    position: str, survey: str, pixels: int
-) -> tuple[np.ndarray, fits.Header, WCS]:
+def _download_single(position: str, survey: str, pixels: int) -> tuple[np.ndarray, fits.Header, WCS]:
     """Download from a specific survey, trying multiple pixel sizes."""
     result, pixels_used = _find_best_pixels(position, survey, pixels)
 
@@ -162,9 +151,7 @@ def _download_single(
     return _extract_data(result, survey, pixels_used)
 
 
-def _download_best(
-    position: str, pixels: int
-) -> tuple[np.ndarray, fits.Header, WCS]:
+def _download_best(position: str, pixels: int) -> tuple[np.ndarray, fits.Header, WCS]:
     """Try all surveys, return the one with highest quality and resolution."""
     best_score = -1
     best_result = None
@@ -180,7 +167,6 @@ def _download_best(
         data, header, wcs = _extract_data(result, survey, pixels_used)
         score = _quality_score(data)
 
-        # Bonus por mayor resolución
         resolution_bonus = pixels_used / 300.0
         total_score = score * resolution_bonus
 
@@ -202,9 +188,7 @@ def _download_best(
     return best_result
 
 
-def _download_first(
-    position: str, pixels: int
-) -> tuple[np.ndarray, fits.Header, WCS]:
+def _download_first(position: str, pixels: int) -> tuple[np.ndarray, fits.Header, WCS]:
     """Try surveys in order, return the first that works."""
     for survey in CANDIDATE_SURVEYS:
         result, pixels_used = _find_best_pixels(position, survey, pixels)
