@@ -1,62 +1,41 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "astroimg"
 version = "0.1.0"
-description = "Astronomical image analysis: source detection, aperture photometry and Gaia crossmatching from FITS images"
+description = "Astronomical image analysis library"
 readme = "README.md"
-license = { file = "LICENSE" }
-authors = [
-  { name = "Paco", email = "tu@email.com" }
-]
-keywords = ["astronomy", "fits", "image-processing", "source-detection", "photometry", "gaia"]
-classifiers = [
-  "Development Status :: 3 - Alpha",
-  "Intended Audience :: Science/Research",
-  "Topic :: Scientific/Engineering :: Astronomy",
-  "License :: OSI Approved :: MIT License",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-]
+license = {text = "MIT"}
 requires-python = ">=3.9"
+authors = [
+    {name = "Francisco Emilio Cervantes Silva"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Astronomy",
+]
 dependencies = [
-  "numpy>=1.24",
-  "scipy>=1.10",
-  "matplotlib>=3.7",
-  "astropy>=5.3",
-  "astroquery>=0.4.6",
-  "pandas>=2.0",
-  "photutils>=1.9",
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+    "astropy>=5.3",
+    "astroquery>=0.4.6",
+    "pandas>=2.0",
 ]
 
 [project.optional-dependencies]
-dev = [
-  "pytest>=7.4",
-  "pytest-cov>=4.1",
-]
-classification = [
-  "torch>=2.0",
-  "torchvision>=0.15",
-  "scikit-learn>=1.3",
-]
+dev = ["pytest", "pytest-cov"]
 
 [project.urls]
-Homepage = "https://github.com/tuusuario/astroimg"
-Repository = "https://github.com/tuusuario/astroimg"
-Documentation = "https://github.com/tuusuario/astroimg#readme"
-"Bug Tracker" = "https://github.com/tuusuario/astroimg/issues"
+Homepage = "https://github.com/Fr-C-S-08"
+Repository = "https://github.com/Fr-C-S-08/Astroimg-Library"
 
 [tool.setuptools.packages.find]
-where = ["."]
 include = ["astroimg*"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
