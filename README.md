@@ -1,6 +1,17 @@
 # Astroimg
 
+[![PyPI version](https://img.shields.io/pypi/v/astroimg.svg)](https://pypi.org/project/astroimg/)
+[![Python](https://img.shields.io/pypi/pyversions/astroimg.svg)](https://pypi.org/project/astroimg/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ln6vDxoyhJ3HhTe48qyPyTvRKi7dxNLy?usp=sharing)
+
 A Python library for astronomical image analysis. Download FITS images from sky surveys, detect sources, measure their brightness, and cross-match with the Gaia DR3 catalog.
+
+## Example
+
+![Astroimg demo — Pleiades cluster with Gaia-enriched highlight](docs/demo.png)
+
+*Pleiades (M45) with Alcyone highlighted and enriched with Gaia DR3 data.*
 
 ## Installation
 
@@ -70,10 +81,15 @@ Or install from source:
     result = crossmatch_gaia(phot)
     crossmatch_stats(result)
 
-**Highlight specific stars**
+**Highlight stars by name (Simbad + Gaia)**
 
-    from astroimg import highlight_star
-    highlight_star(data, wcs, name="HD 196885", sources=sources)
+    from astroimg import highlight_star, crossmatch_gaia
+
+    # Highlight a star by its catalog name — coordinates resolved via Simbad
+    highlight_star(data, wcs, name="Alcyone", sources=sources)
+
+    # Combine with Gaia DR3 for astrophysical data (temperature, parallax, distance)
+    result = crossmatch_gaia(phot)
 
 ## Tutorial
 
@@ -103,8 +119,10 @@ The notebook covers:
 - Python >= 3.9
 - numpy, scipy, matplotlib, astropy, astroquery, pandas
 
+## Acknowledgments
+
+Developed as the final project for **Fuentes de Datos** (Spring 2026), ITAM.
+
 ## License
 
 MIT
-
-
