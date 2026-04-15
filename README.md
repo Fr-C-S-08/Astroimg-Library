@@ -7,12 +7,6 @@
 
 A Python library for astronomical image analysis. Download FITS images from sky surveys, detect sources, measure their brightness, and cross-match with the Gaia DR3 catalog.
 
-## Example
-
-![Astroimg demo — Pleiades cluster with Gaia-enriched highlight](docs/demo.png)
-
-*Pleiades (M45) with Alcyone highlighted and enriched with Gaia DR3 data.*
-
 ## Installation
 
     pip install astroimg
